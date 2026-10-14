@@ -1,0 +1,19 @@
+{
+  "name": "arthana-wedding-calendar",
+  "version": "2.0.0",
+  "description": "Running Event Management & Wedding Calendar for ARTHANA Wedding & Events",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "wedding",
+    "event-management",
+    "calendar",
+    "vercel",
+    "google-sheets"
+  ],
+  "author": "ARTHANA Wedding & Events",
+  "license": "ISC"
+}
