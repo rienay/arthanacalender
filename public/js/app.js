@@ -1136,6 +1136,9 @@ function renderDetail(e) {
         <button class="btn-dispatch copy-btn" onclick="copyEventSummary(${e.id})" title="Salin teks rundown & tim ke clipboard">
           <span>📋</span> <span>Salin Rundown & Tim</span>
         </button>
+        <button class="btn-dispatch gcal-btn" onclick="openGoogleCalendarEvent(${e.id})" title="Buka dan pasang jadwal di Google Calendar HP">
+          <span>📅</span> <span>Google Calendar</span>
+        </button>
       </div>
     </div>
 
@@ -1629,6 +1632,41 @@ Catatan: ${e.notes || '-'}`;
   } else {
     showToast('✓ Rundown tim siap');
   }
+}
+
+function openGoogleCalendarEvent(id) {
+  let e = (state.events || []).find(x => x.id === id);
+  if (!e) return;
+
+  const title = encodeURIComponent(`${e.name || 'Acara'} — ${e.client || 'Pengantin'}`);
+  const location = encodeURIComponent(e.location || '');
+
+  // Format tanggal & waktu ke format ISO untuk Google Calendar: YYYYMMDDTHHmmss
+  const dateFormatted = (e.date || '').replace(/-/g, '');
+  const startTime = (e.start || '08:00').replace(':', '') + '00';
+  const endTime = (e.end || '12:00').replace(':', '') + '00';
+  const dates = `${dateFormatted}T${startTime}/${dateFormatted}T${endTime}`;
+
+  const teamList = (e.team || []).map(name => {
+    const role = (e.teamRoles && e.teamRoles[name]) ? e.teamRoles[name] : 'Kru';
+    return `• ${name} (${role})`;
+  }).join('\n');
+
+  const details = encodeURIComponent(
+    `💍 ARTHANA WEDDING & EVENTS\n` +
+    `Acara: ${e.name} — ${e.client}\n` +
+    `Layanan: ${e.service || '-'}\n` +
+    `Lead PIC: ${e.pic || '-'}\n` +
+    `WhatsApp Pengantin: ${e.phone || '-'}\n` +
+    `Status: ${e.status || 'PLANNING'}\n` +
+    `Catatan: ${e.notes || '-'}\n\n` +
+    `👥 Tim Bertugas:\n${teamList || '-'}\n\n` +
+    `⏰ Pengingat & Alarm aktif otomatis di Google Calendar.`
+  );
+
+  const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+  window.open(gcalUrl, '_blank');
+  showToast('✓ Membuka Google Calendar...');
 }
 
 function copyPostEventReport(id) {

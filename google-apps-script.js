@@ -59,9 +59,20 @@ function doPost(e) {
 
     saveStateToSheets(body.state);
 
+    // Otomatis sinkronkan jadwal acara ke Google Calendar + Atur Alarm & Reminder
+    let calSynced = false;
+    if (body.state.events && Array.isArray(body.state.events)) {
+      try {
+        calSynced = syncEventsToGoogleCalendar(body.state.events);
+      } catch (calErr) {
+        Logger.log("Google Calendar Sync Error: " + calErr.toString());
+      }
+    }
+
     return responseJson({
       success: true,
-      message: "Data berhasil disimpan ke Google Sheets",
+      message: "Data berhasil disimpan ke Google Sheets & Google Calendar",
+      calendarSynced: Boolean(calSynced),
       updatedAt: new Date().toISOString()
     });
   } catch (err) {
@@ -238,4 +249,138 @@ function loadStateFromSheets() {
     }
   }
   return null;
+}
+
+// ------------------------------------------------------------------------------
+// GOOGLE CALENDAR AUTOMATIC SYNC & ALARM ENGINE
+// ------------------------------------------------------------------------------
+
+function getOrCreateArthanaCalendar() {
+  const calName = "ARTHANA Wedding & Events";
+  const cals = CalendarApp.getCalendarsByName(calName);
+  if (cals && cals.length > 0) {
+    return cals[0];
+  }
+  try {
+    const newCal = CalendarApp.createCalendar(calName, {
+      summary: "Kalender Resmi Jadwal & Operasional ARTHANA Wedding & Events",
+      timeZone: "Asia/Jakarta"
+    });
+    return newCal;
+  } catch (e) {
+    return CalendarApp.getDefaultCalendar();
+  }
+}
+
+function syncEventsToGoogleCalendar(events) {
+  if (!events || !events.length) return false;
+  const cal = getOrCreateArthanaCalendar();
+  if (!cal) return false;
+
+  // Rentang pencarian: 1 bulan ke belakang s/d 2 tahun ke depan
+  const now = new Date();
+  const rangeStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const rangeEnd = new Date(now.getFullYear() + 2, 11, 31);
+  const existingCalEvents = cal.getEvents(rangeStart, rangeEnd);
+
+  // Buat mapping event yang sudah ada berdasarkan tag ID
+  const eventMap = {};
+  for (let i = 0; i < existingCalEvents.length; i++) {
+    const ce = existingCalEvents[i];
+    const tag = ce.getTag("arthana_id");
+    if (tag) {
+      eventMap[tag] = ce;
+    }
+  }
+
+  // Buat set ID event yang aktif saat ini untuk deteksi event yang dihapus
+  const activeEventIds = {};
+
+  events.forEach(function(ev) {
+    if (!ev || !ev.date) return;
+    const evIdStr = String(ev.id);
+    activeEventIds[evIdStr] = true;
+
+    // Parsing tanggal & jam
+    const dateParts = String(ev.date).split("-");
+    if (dateParts.length !== 3) return;
+    const year = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1;
+    const day = parseInt(dateParts[2], 10);
+
+    const startStr = ev.start || "08:00";
+    const startTimeParts = startStr.split(":");
+    const startHour = parseInt(startTimeParts[0] || "8", 10);
+    const startMin = parseInt(startTimeParts[1] || "0", 10);
+    const startDate = new Date(year, month, day, startHour, startMin, 0);
+
+    const endStr = ev.end || (startHour + 2) + ":" + (startTimeParts[1] || "00");
+    const endTimeParts = endStr.split(":");
+    let endHour = parseInt(endTimeParts[0] || String(startHour + 2), 10);
+    const endMin = parseInt(endTimeParts[1] || "0", 10);
+    let endDate = new Date(year, month, day, endHour, endMin, 0);
+
+    if (endDate <= startDate) {
+      endDate = new Date(startDate.getTime() + 2 * 3600000); // default 2 jam jika jam selesai invalid
+    }
+
+    const title = (ev.name ? ev.name : "Event") + " — " + (ev.client ? ev.client : "Client");
+
+    const teamStr = Array.isArray(ev.team) ? ev.team.map(function(n) {
+      const r = (ev.teamRoles && ev.teamRoles[n]) ? ev.teamRoles[n] : "";
+      return r ? n + " (" + r + ")" : n;
+    }).join(", ") : (typeof ev.team === "string" ? ev.team : "-");
+
+    const description = [
+      "💍 ACARA: " + title,
+      "📋 Layanan: " + (ev.service || "-"),
+      "👑 Lead PIC: " + (ev.pic || "-"),
+      "📞 WhatsApp Pengantin: " + (ev.phone || "-"),
+      "📍 Lokasi: " + (ev.location || "-"),
+      "👥 Tim Bertugas: " + teamStr,
+      "⚡ Status: " + (ev.status || "PLANNING"),
+      "📝 Catatan: " + (ev.notes || "-"),
+      "",
+      "--- Disinkronkan otomatis oleh Dashboard ARTHANA Wedding ---"
+    ].join("\n");
+
+    const options = {
+      description: description,
+      location: ev.location || ""
+    };
+
+    let calEvent = eventMap[evIdStr];
+
+    if (calEvent) {
+      // Perbarui event kalender yang sudah ada
+      calEvent.setTitle(title);
+      calEvent.setTime(startDate, endDate);
+      calEvent.setDescription(description);
+      calEvent.setLocation(ev.location || "");
+    } else {
+      // Buat event kalender baru
+      calEvent = cal.createEvent(title, startDate, endDate, options);
+      calEvent.setTag("arthana_id", evIdStr);
+
+      // PASANG ALARM & PENGINGAT NOTIFIKASI DI HP:
+      // 1. Alarm H-1 (1440 menit / 24 jam sebelum acara)
+      // 2. Alarm H-3 Jam (180 menit sebelum acara)
+      // 3. Alarm 30 Menit (30 menit sebelum acara untuk standby tim)
+      calEvent.removeAllReminders();
+      calEvent.addPopupReminder(1440);
+      calEvent.addPopupReminder(180);
+      calEvent.addPopupReminder(30);
+    }
+  });
+
+  // Hapus event kalender jika acara sudah dihapus dari dashboard
+  for (let idKey in eventMap) {
+    if (!activeEventIds[idKey]) {
+      try {
+        eventMap[idKey].deleteEvent();
+      } catch (delErr) {}
+    }
+  }
+
+  return true;
 }

@@ -2001,6 +2001,19 @@ body.locked .app {
   border-color: var(--border-hover);
 }
 
+.btn-dispatch.gcal-btn {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid var(--border-light);
+}
+
+.btn-dispatch.gcal-btn:hover {
+  background: #fefce8;
+  color: #854d0e;
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
 .btn-dispatch:active {
   transform: scale(0.97);
 }
