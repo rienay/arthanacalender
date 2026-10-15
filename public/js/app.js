@@ -109,6 +109,14 @@ function applyTheme(theme) {
   if (icon) {
     icon.textContent = theme === 'dark' ? '☀️' : '🌙';
   }
+  const sideIcon = document.getElementById('sideThemeIcon');
+  const sideText = document.getElementById('sideThemeText');
+  if (sideIcon) {
+    sideIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+  if (sideText) {
+    sideText.textContent = theme === 'dark' ? 'Mode Terang' : 'Mode Gelap';
+  }
 }
 
 function toggleTheme() {
@@ -372,13 +380,19 @@ function goPage(p) {
   document.getElementById('pageTitle').textContent = titles[p] || (p.charAt(0).toUpperCase() + p.slice(1));
 
   document.querySelector('.sidebar')?.classList.remove('mobile-open');
+  document.getElementById('sidebarBackdrop')?.classList.remove('active');
 
   renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function toggleMobileSidebar() {
-  document.querySelector('.sidebar')?.classList.toggle('mobile-open');
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const isOpen = sidebar?.classList.toggle('mobile-open');
+  if (backdrop) {
+    backdrop.classList.toggle('active', !!isOpen);
+  }
 }
 
 function updateLiveClock() {
