@@ -355,8 +355,8 @@ function syncEventsToGoogleCalendar(events) {
       "📝 Catatan: " + (ev.notes || "-"),
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━",
       (isMeeting 
-        ? "⏰ Alarm Meeting: H-1 Hari, H-3 Jam, H-1 Jam, H-30 Menit, H-10 Menit" 
-        : "⏰ Alarm Wedding: H-30 Hari, H-15 Hari, H-1 Minggu, H-1 Hari, H-30 Menit"),
+        ? "⏰ Alarm Meeting: H-1 Hari, H-3 Jam" 
+        : "⏰ Alarm Wedding: H-30 Hari, H-15 Hari, H-1 Minggu, H-1 Hari"),
       "--- Disinkronkan otomatis oleh Dashboard ARTHANA Wedding ---"
     ].join("\n");
 
@@ -400,20 +400,20 @@ function applyEventReminders(calEvent, isMeeting) {
     calEvent.removeAllReminders();
 
     if (isMeeting) {
-      // 5 ALARM KHUSUS KETEMU CLIENT:
+      // ALARM KHUSUS KETEMU CLIENT:
       // 1. H-1 Hari (1.440 menit) - Pengingat besok ada jadwal meeting
       // 2. H-3 Jam (180 menit) - Siapkan materi, rundown & konfirmasi client
-      // 3. H-1 Jam (60 menit) - Bersiap / dalam perjalanan ke venue meeting
-      // 4. H-30 Menit (30 menit) - Menjelang meeting
-      // 5. H-10 Menit (10 menit) - Standby di meja / tempat meeting
-      const meetingAlarms = [1440, 180, 60, 30, 10];
+      const meetingAlarms = [1440, 180];
       meetingAlarms.forEach(function(mins) {
         try { calEvent.addPopupReminder(mins); } catch (e) {}
       });
     } else {
-      // 5 ALARM JADWAL ACARA / WEDDING (H-30, H-15, H-1 Minggu, H-1 Hari, H-30 Menit):
-      // Catatan: Batas maksimal Google Calendar API adalah 40.320 menit (~4 minggu / 28 hari)
-      const weddingAlarms = [40320, 21600, 10080, 1440, 30];
+      // ALARM JADWAL ACARA / WEDDING:
+      // 1. H-30 Hari (~4 minggu / 40.320 menit)
+      // 2. H-15 Hari (21.600 menit)
+      // 3. H-1 Minggu (10.080 menit)
+      // 4. H-1 Hari (1.440 menit)
+      const weddingAlarms = [40320, 21600, 10080, 1440];
       weddingAlarms.forEach(function(mins) {
         try { calEvent.addPopupReminder(mins); } catch (e) {}
       });
