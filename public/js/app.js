@@ -85,6 +85,130 @@ const ALL_SERVICES = [
   'Photobooth Event'
 ];
 
+const DEMO_INITIAL_STATE = {
+  events: [
+    {
+      id: 1,
+      client: 'Andi & Sinta',
+      name: 'Akad',
+      date: new Date().toISOString().slice(0, 10),
+      start: '08:00',
+      end: '09:30',
+      service: 'Wedding Organizer',
+      pic: 'Said',
+      phone: '081227502548',
+      location: 'Venue Andi & Sinta',
+      status: 'RUNNING',
+      actualStart: new Date(Date.now() - 25 * 60000).toISOString(),
+      actualEnd: '',
+      notes: 'Koordinasi keluarga dan vendor.',
+      team: ['Said'],
+      notesLog: [
+        { time: '08:15', text: 'Bride sudah tiba' },
+        { time: '08:30', text: 'MUA selesai' },
+        { time: '08:45', text: 'Tim WO standby' }
+      ]
+    },
+    {
+      id: 2,
+      client: 'Rina & Dimas',
+      name: 'Bride Assistant',
+      date: new Date().toISOString().slice(0, 10),
+      start: '10:00',
+      end: '13:00',
+      service: 'Bride Assistant',
+      pic: 'Ida',
+      phone: '085813471247',
+      location: 'Hotel Cilacap',
+      status: 'READY',
+      actualStart: '',
+      actualEnd: '',
+      notes: '',
+      team: ['Ida'],
+      notesLog: []
+    },
+    {
+      id: 3,
+      client: 'Client B',
+      name: 'Meeting Client',
+      date: new Date().toISOString().slice(0, 10),
+      start: '13:00',
+      end: '14:00',
+      service: 'Wedding Organizer',
+      pic: 'Said',
+      phone: '',
+      location: 'Office',
+      status: 'PLANNING',
+      actualStart: '',
+      actualEnd: '',
+      notes: 'Bahas rundown.',
+      team: ['Said'],
+      notesLog: []
+    },
+    {
+      id: 4,
+      client: 'Rina & Dimas',
+      name: 'Content Wedding',
+      date: new Date().toISOString().slice(0, 10),
+      start: '15:00',
+      end: '18:00',
+      service: 'Wedding Content Creator',
+      pic: 'Sulis',
+      phone: '',
+      location: 'Venue',
+      status: 'READY',
+      actualStart: '',
+      actualEnd: '',
+      notes: 'Shot list wajib.',
+      team: ['Sulis'],
+      notesLog: []
+    },
+    {
+      id: 5,
+      client: 'Andi & Sinta',
+      name: 'Reception',
+      date: new Date().toISOString().slice(0, 10),
+      start: '19:00',
+      end: '22:00',
+      service: 'Photobooth Event',
+      pic: 'Tri',
+      phone: '',
+      location: 'Ballroom',
+      status: 'READY',
+      actualStart: '',
+      actualEnd: '',
+      notes: 'Backdrop 3x4.',
+      team: ['Tri'],
+      notesLog: []
+    }
+  ],
+  team: [
+    { id: 1, name: 'Said', role: 'WO Team', phone: '081227502548' },
+    { id: 2, name: 'Ida', role: 'Bride Assistant', phone: '085813471247' },
+    { id: 3, name: 'Sulis', role: 'Content Creator', phone: '' },
+    { id: 4, name: 'Tri', role: 'Photobooth Team', phone: '' },
+    { id: 5, name: 'Rosy', role: 'Content Creator', phone: '' }
+  ],
+  clients: [
+    { name: 'Andi & Sinta', phone: '081227502548' },
+    { name: 'Rina & Dimas', phone: '085813471247' },
+    { name: 'Client B', phone: '' }
+  ],
+  tasks: [
+    { id: 1, text: 'Konfirmasi vendor & venue', done: true, eventId: 1 },
+    { id: 2, text: 'Cek rundown acara', done: false, eventId: 1 },
+    { id: 3, text: 'Siapkan emergency kit', done: false, eventId: 1 },
+    { id: 4, text: 'Upload shot list WCC', done: true, eventId: 4 },
+    { id: 5, text: 'Cek perlengkapan photobooth', done: false, eventId: 5 }
+  ],
+  activity: [
+    {
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      text: 'Contoh data demo dimuat.'
+    }
+  ]
+};
+
 let selectedServices = ['Wedding Organizer'];
 let selectedPics = [];
 let currentQuickTeamEventId = null;
@@ -375,7 +499,8 @@ function goPage(p) {
     team: 'Team Management',
     tasks: 'Tasks & Checklist',
     notes: 'Live Notes & Activity',
-    report: 'Report & Analytics'
+    report: 'Report & Analytics',
+    settings: 'Pengaturan & Database'
   };
   document.getElementById('pageTitle').textContent = titles[p] || (p.charAt(0).toUpperCase() + p.slice(1));
 
@@ -2172,6 +2297,186 @@ function renderAll() {
   renderTasks();
   renderNotes();
   renderReport();
+  renderSettings();
+}
+
+// ------------------------------------------------------------------------------
+// SETTINGS & DATABASE RESET MANAGEMENT
+// ------------------------------------------------------------------------------
+
+let activeResetAction = null;
+
+function renderSettings() {
+  const evEl = document.getElementById('settEventCount');
+  const clEl = document.getElementById('settClientCount');
+  const tkEl = document.getElementById('settTaskCount');
+  const tmEl = document.getElementById('settTeamCount');
+  const scEl = document.getElementById('settSyncStatus');
+
+  if (evEl) evEl.textContent = (state.events || []).length;
+  if (clEl) clEl.textContent = (state.clients || []).length;
+  if (tkEl) tkEl.textContent = (state.tasks || []).length;
+  if (tmEl) tmEl.textContent = (state.team || []).length;
+  if (scEl) {
+    if (isGoogleSheetsConnected) {
+      scEl.textContent = 'Terhubung';
+      scEl.style.color = 'var(--success)';
+    } else {
+      scEl.textContent = 'Mode Lokal';
+      scEl.style.color = 'var(--warning)';
+    }
+  }
+}
+
+function openResetModal(type) {
+  activeResetAction = type;
+  const modal = document.getElementById('resetConfirmModal');
+  const title = document.getElementById('resetModalTitle');
+  const desc = document.getElementById('resetModalDesc');
+  const input = document.getElementById('resetKeywordInput');
+  const btn = document.getElementById('btnConfirmReset');
+
+  if (input) input.value = '';
+  if (btn) btn.disabled = true;
+
+  if (type === 'clean_events') {
+    if (title) title.textContent = 'Kosongkan Data Acara & Pengantin';
+    if (desc) desc.textContent = 'Semua Event, data Pengantin, Task checklist, dan Live Notes akan dihapus permanen. Daftar anggota kru tim ARTHANA tetap dipertahankan.';
+    if (btn) btn.textContent = 'Kosongkan Acara Sekarang';
+  } else if (type === 'factory_reset') {
+    if (title) title.textContent = 'Reset Total Sistem (Factory Reset)';
+    if (desc) desc.textContent = 'PERINGATAN KERAS: Seluruh data tanpa terkecuali (Acara, Pengantin, Tim, Task, Catatan) akan DIHAPUS BERSIH menjadi database kosong baru.';
+    if (btn) btn.textContent = 'Reset Total Sistem';
+  } else if (type === 'demo_data') {
+    if (title) title.textContent = 'Kembalikan ke Contoh Data Demo';
+    if (desc) desc.textContent = 'Database saat ini akan digantikan dengan data contoh demo Wedding Organizer ARTHANA untuk keperluan simulasi.';
+    if (btn) btn.textContent = 'Muat Data Demo';
+  }
+
+  if (modal) modal.style.display = 'flex';
+  setTimeout(() => input && input.focus(), 100);
+}
+
+function closeResetModal() {
+  activeResetAction = null;
+  const modal = document.getElementById('resetConfirmModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function validateResetKeyword() {
+  const input = document.getElementById('resetKeywordInput');
+  const btn = document.getElementById('btnConfirmReset');
+  if (!input || !btn) return;
+  const val = input.value.trim().toUpperCase();
+  btn.disabled = (val !== 'RESET');
+}
+
+async function executeResetData() {
+  if (!activeResetAction) return;
+
+  const type = activeResetAction;
+  closeResetModal();
+
+  if (type === 'clean_events') {
+    state.events = [];
+    state.clients = [];
+    state.tasks = [];
+    state.notes = [];
+    state.activity = [
+      {
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        text: 'Database acara & pengantin telah dibersihkan oleh Administrator.'
+      }
+    ];
+    showToast('✓ Semua data acara & pengantin berhasil dikosongkan!');
+  } else if (type === 'factory_reset') {
+    state = {
+      events: [],
+      clients: [],
+      team: [],
+      tasks: [],
+      activity: [
+        {
+          time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          text: 'Reset total pabrik berhasil. Database bersih siap digunakan.'
+        }
+      ]
+    };
+    showToast('✓ Sistem berhasil di-reset total ke kondisi awal!');
+  } else if (type === 'demo_data') {
+    state = JSON.parse(JSON.stringify(DEMO_INITIAL_STATE));
+    const nowIso = new Date().toISOString().slice(0, 10);
+    state.events.forEach((ev, idx) => {
+      ev.date = nowIso;
+      if (idx === 0) {
+        ev.actualStart = new Date(Date.now() - 25 * 60000).toISOString();
+      }
+    });
+    showToast('✓ Contoh data demo berhasil dimuat kembali!');
+  }
+
+  await save();
+  renderAll();
+}
+
+function exportDataBackup() {
+  try {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+    const downloadAnchor = document.createElement('a');
+    const todayStr = new Date().toISOString().slice(0, 10);
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `arthana-backup-${todayStr}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast('✓ File cadangan data (JSON) berhasil diunduh!');
+  } catch (e) {
+    alert('Gagal mengunduh backup: ' + e.message);
+  }
+}
+
+function importDataBackup(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const parsed = JSON.parse(event.target.result);
+      if (!parsed || typeof parsed !== 'object') {
+        throw new Error('Format file cadangan tidak valid.');
+      }
+      if (!Array.isArray(parsed.events) && !Array.isArray(parsed.clients)) {
+        throw new Error('Struktur file JSON tidak sesuai dengan format ARTHANA.');
+      }
+
+      state = {
+        events: Array.isArray(parsed.events) ? parsed.events : [],
+        clients: Array.isArray(parsed.clients) ? parsed.clients : [],
+        team: Array.isArray(parsed.team) ? parsed.team : [],
+        tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+        activity: Array.isArray(parsed.activity) ? parsed.activity : [
+          { time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), text: 'Data dipulihkan dari file cadangan.' }
+        ]
+      };
+
+      await save();
+      renderAll();
+      showToast('✓ Database berhasil dipulihkan dari file backup!');
+    } catch (err) {
+      alert('Gagal memulihkan data: ' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function triggerSyncNow() {
+  showToast('🔄 Menyinkronkan database dengan cloud...');
+  await save();
+  renderAll();
+  showToast('✓ Sinkronisasi cloud berhasil!');
 }
 
 // ------------------------------------------------------------------------------
@@ -2224,6 +2529,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') {
       ['eventModal', 'detailModal', 'clientModal', 'teamModal', 'noteModal', 'quickTeamModal'].forEach(closeModal);
       closeDeleteBrideModal();
+      closeResetModal();
     }
   });
 
@@ -2238,6 +2544,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (delOverlay) {
     delOverlay.addEventListener('click', (e) => {
       if (e.target === delOverlay) closeDeleteBrideModal();
+    });
+  }
+
+  const resetOverlay = document.getElementById('resetConfirmModal');
+  if (resetOverlay) {
+    resetOverlay.addEventListener('click', (e) => {
+      if (e.target === resetOverlay) closeResetModal();
     });
   }
 
