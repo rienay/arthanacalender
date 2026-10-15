@@ -1313,6 +1313,8 @@ function quickLogNote(eventId, text) {
   renderAll();
   renderDetail(ev);
   showToast(`✓ Catatan tercatat: "${text}"`);
+}
+
 // Inline Chat-style Task Composer
 function handleInlineAddTask(event, eventId) {
   event.preventDefault();

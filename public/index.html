@@ -21,7 +21,7 @@
     
     <div id="loginError" class="login-error"></div>
 
-    <form id="loginForm">
+    <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="login-field">
         <label for="loginUsername">Username</label>
         <input id="loginUsername" class="login-input" type="text" autocomplete="username" placeholder="Masukkan username" required autofocus>
