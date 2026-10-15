@@ -324,7 +324,17 @@ function syncEventsToGoogleCalendar(events) {
       endDate = new Date(startDate.getTime() + 2 * 3600000); // default 2 jam jika jam selesai invalid
     }
 
-    const title = (ev.name ? ev.name : "Event") + " — " + (ev.client ? ev.client : "Client");
+    const nameLower = (ev.name || "").toLowerCase();
+    const serviceLower = (ev.service || "").toLowerCase();
+    const isMeeting = nameLower.indexOf("meeting") !== -1 ||
+                      nameLower.indexOf("temu") !== -1 ||
+                      nameLower.indexOf("briefing") !== -1 ||
+                      nameLower.indexOf("konsultasi") !== -1 ||
+                      nameLower.indexOf("survey") !== -1 ||
+                      serviceLower.indexOf("meeting") !== -1;
+
+    const eventPrefix = isMeeting ? "🤝 MEETING CLIENT: " : "💍 ";
+    const title = eventPrefix + (ev.name ? ev.name : "Acara") + " — " + (ev.client ? ev.client : "Client");
 
     const teamStr = Array.isArray(ev.team) ? ev.team.map(function(n) {
       const r = (ev.teamRoles && ev.teamRoles[n]) ? ev.teamRoles[n] : "";
@@ -332,15 +342,21 @@ function syncEventsToGoogleCalendar(events) {
     }).join(", ") : (typeof ev.team === "string" ? ev.team : "-");
 
     const description = [
-      "💍 ACARA: " + title,
+      (isMeeting ? "🤝 JADWAL KETEMU / MEETING CLIENT" : "💍 JADWAL ACARA WEDDING"),
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "👰 Client / Pengantin: " + (ev.client || "-"),
+      "🎉 Nama Event: " + (ev.name || "-"),
       "📋 Layanan: " + (ev.service || "-"),
       "👑 Lead PIC: " + (ev.pic || "-"),
-      "📞 WhatsApp Pengantin: " + (ev.phone || "-"),
+      "📞 WhatsApp: " + (ev.phone || "-"),
       "📍 Lokasi: " + (ev.location || "-"),
       "👥 Tim Bertugas: " + teamStr,
       "⚡ Status: " + (ev.status || "PLANNING"),
       "📝 Catatan: " + (ev.notes || "-"),
-      "",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      (isMeeting 
+        ? "⏰ Alarm Meeting: H-1 Hari, H-3 Jam, H-1 Jam, H-30 Menit, H-10 Menit" 
+        : "⏰ Alarm Wedding: H-30 Hari, H-15 Hari, H-1 Minggu, H-1 Hari, H-30 Menit"),
       "--- Disinkronkan otomatis oleh Dashboard ARTHANA Wedding ---"
     ].join("\n");
 
@@ -361,16 +377,10 @@ function syncEventsToGoogleCalendar(events) {
       // Buat event kalender baru
       calEvent = cal.createEvent(title, startDate, endDate, options);
       calEvent.setTag("arthana_id", evIdStr);
-
-      // PASANG ALARM & PENGINGAT NOTIFIKASI DI HP:
-      // 1. Alarm H-1 (1440 menit / 24 jam sebelum acara)
-      // 2. Alarm H-3 Jam (180 menit sebelum acara)
-      // 3. Alarm 30 Menit (30 menit sebelum acara untuk standby tim)
-      calEvent.removeAllReminders();
-      calEvent.addPopupReminder(1440);
-      calEvent.addPopupReminder(180);
-      calEvent.addPopupReminder(30);
     }
+
+    // PASANG ALARM PENGINGAT (untuk event baru maupun event yang diupdate):
+    applyEventReminders(calEvent, isMeeting);
   });
 
   // Hapus event kalender jika acara sudah dihapus dari dashboard
@@ -383,4 +393,32 @@ function syncEventsToGoogleCalendar(events) {
   }
 
   return true;
+}
+
+function applyEventReminders(calEvent, isMeeting) {
+  try {
+    calEvent.removeAllReminders();
+
+    if (isMeeting) {
+      // 5 ALARM KHUSUS KETEMU CLIENT:
+      // 1. H-1 Hari (1.440 menit) - Pengingat besok ada jadwal meeting
+      // 2. H-3 Jam (180 menit) - Siapkan materi, rundown & konfirmasi client
+      // 3. H-1 Jam (60 menit) - Bersiap / dalam perjalanan ke venue meeting
+      // 4. H-30 Menit (30 menit) - Menjelang meeting
+      // 5. H-10 Menit (10 menit) - Standby di meja / tempat meeting
+      const meetingAlarms = [1440, 180, 60, 30, 10];
+      meetingAlarms.forEach(function(mins) {
+        try { calEvent.addPopupReminder(mins); } catch (e) {}
+      });
+    } else {
+      // 5 ALARM JADWAL ACARA / WEDDING (H-30, H-15, H-1 Minggu, H-1 Hari, H-30 Menit):
+      // Catatan: Batas maksimal Google Calendar API adalah 40.320 menit (~4 minggu / 28 hari)
+      const weddingAlarms = [40320, 21600, 10080, 1440, 30];
+      weddingAlarms.forEach(function(mins) {
+        try { calEvent.addPopupReminder(mins); } catch (e) {}
+      });
+    }
+  } catch (err) {
+    Logger.log("Error setting reminders: " + err.toString());
+  }
 }
