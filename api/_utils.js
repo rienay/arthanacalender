@@ -118,142 +118,79 @@ function readBody(req) {
 const defaultInitialState = {
   events: [
     {
-      id: 1,
-      client: 'Andi & Sinta',
-      name: 'Akad',
-      date: new Date().toISOString().slice(0, 10),
-      start: '08:00',
-      end: '09:30',
-      service: 'Wedding Organizer',
-      pic: 'Said',
-      phone: '081227502548',
-      location: 'Venue Andi & Sinta',
-      status: 'RUNNING',
-      actualStart: new Date(Date.now() - 25 * 60000).toISOString(),
-      actualEnd: '',
-      notes: 'Koordinasi keluarga dan vendor.',
-      team: ['Said'],
-      notesLog: [
-        { time: '08:15', text: 'Bride sudah tiba' },
-        { time: '08:30', text: 'MUA selesai' },
-        { time: '08:45', text: 'Tim WO standby' }
-      ]
-    },
-    {
-      id: 2,
-      client: 'Rina & Dimas',
-      name: 'Bride Assistant',
-      date: new Date().toISOString().slice(0, 10),
-      start: '10:00',
-      end: '13:00',
-      service: 'Bride Assistant',
-      pic: 'Ida',
-      phone: '085813471247',
-      location: 'Hotel Cilacap',
-      status: 'READY',
-      actualStart: '',
-      actualEnd: '',
-      notes: '',
-      team: ['Ida'],
-      notesLog: []
-    },
-    {
-      id: 3,
-      client: 'Client B',
-      name: 'Meeting Client',
-      date: new Date().toISOString().slice(0, 10),
-      start: '13:00',
+      id: 1792069645273,
+      client: 'Yunita & Dafi',
+      name: 'Intimatte Wedding',
+      date: '2026-11-28',
+      start: '06:00',
       end: '14:00',
+      services: [
+        'Wedding Organizer',
+        'Bride Assistant',
+        'Wedding Content Creator',
+        'Photobooth Event'
+      ],
+      service: 'Wedding Organizer + Bride Assistant + Wedding Content Creator + Photobooth Event',
+      pics: ['Said Rahman', 'Laeliya Hasanah'],
+      pic: 'Said Rahman, Laeliya Hasanah',
+      phone: '+62 851-6151-1869',
+      location: 'Rumah mempelai wanita',
+      status: 'PLANNING',
+      notes: 'Meeting terdekat 21 November 2026',
+      targetDurationSeconds: 28800,
+      targetDurationMinutes: 480,
+      team: ['Said Rahman', 'Laeliya Hasanah', 'Sulis', 'Aknes', 'Radit'],
+      teamRoles: {
+        'Said Rahman': '👑 Lead PIC / Koordinator Utama',
+        'Laeliya Hasanah': '👑 Lead PIC / Koordinator Utama',
+        'Sulis': '📸 Content Creator / WCC (Reels & Story)',
+        'Aknes': '👰 Pendamping Pengantin Wanita (Bride Asst)',
+        'Radit': '🖼️ Photobooth & Souvenir Officer'
+      },
+      notesLog: [],
+      actualStart: '',
+      actualEnd: ''
+    },
+    {
+      id: 1792491100499,
+      client: 'Amalia & Andra',
+      name: 'Akad + Resepsi',
+      date: '2026-10-20',
+      start: '07:00',
+      end: '17:00',
+      services: ['Wedding Organizer'],
       service: 'Wedding Organizer',
-      pic: 'Said',
-      phone: '',
-      location: 'Office',
+      pics: [],
+      pic: '',
+      phone: '085786265338',
+      location: 'Majenang',
       status: 'PLANNING',
+      notes: '',
+      targetDurationSeconds: 36000,
+      targetDurationMinutes: 600,
+      team: [],
+      teamRoles: {},
+      notesLog: [],
       actualStart: '',
-      actualEnd: '',
-      notes: 'Bahas rundown.',
-      team: ['Said'],
-      notesLog: []
-    },
-    {
-      id: 4,
-      client: 'Rina & Dimas',
-      name: 'Content Wedding',
-      date: new Date().toISOString().slice(0, 10),
-      start: '15:00',
-      end: '18:00',
-      service: 'Wedding Content Creator',
-      pic: 'Sulis',
-      phone: '',
-      location: 'Venue',
-      status: 'READY',
-      actualStart: '',
-      actualEnd: '',
-      notes: 'Shot list wajib.',
-      team: ['Sulis'],
-      notesLog: []
-    },
-    {
-      id: 5,
-      client: 'Andi & Sinta',
-      name: 'Reception',
-      date: new Date().toISOString().slice(0, 10),
-      start: '19:00',
-      end: '22:00',
-      service: 'Photobooth Event',
-      pic: 'Tri',
-      phone: '',
-      location: 'Ballroom',
-      status: 'READY',
-      actualStart: '',
-      actualEnd: '',
-      notes: 'Backdrop 3x4.',
-      team: ['Tri'],
-      notesLog: []
-    },
-    {
-      id: 6,
-      client: 'Budi & Nia',
-      name: 'Undangan Digital',
-      date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-      start: '11:00',
-      end: '12:00',
-      service: 'Undangan Digital',
-      pic: 'Rosy',
-      phone: '',
-      location: 'Online',
-      status: 'PLANNING',
-      actualStart: '',
-      actualEnd: '',
-      notes: 'Revisi desain.',
-      team: ['Rosy'],
-      notesLog: []
+      actualEnd: ''
     }
   ],
-  team: [
-    { id: 1, name: 'Said', role: 'WO Team', phone: '081227502548' },
-    { id: 2, name: 'Ida', role: 'Bride Assistant', phone: '085813471247' },
-    { id: 3, name: 'Sulis', role: 'Content Creator', phone: '' },
-    { id: 4, name: 'Tri', role: 'Photobooth Team', phone: '' },
-    { id: 5, name: 'Rosy', role: 'Content Creator', phone: '' }
-  ],
   clients: [
-    { name: 'Andi & Sinta', phone: '081227502548' },
-    { name: 'Rina & Dimas', phone: '085813471247' },
-    { name: 'Client B', phone: '' },
-    { name: 'Budi & Nia', phone: '' }
+    { name: 'Yunita & Dafi', phone: '+62 851-6151-1869' },
+    { name: 'Amalia & Andra', phone: '085786265338' }
   ],
-  tasks: [
-    { id: 1, text: 'Konfirmasi vendor & venue', done: true, eventId: 1 },
-    { id: 2, text: 'Cek rundown acara', done: false, eventId: 1 },
-    { id: 3, text: 'Siapkan emergency kit', done: false, eventId: 1 },
-    { id: 4, text: 'Upload shot list WCC', done: true, eventId: 4 },
-    { id: 5, text: 'Cek perlengkapan photobooth', done: false, eventId: 5 }
+  team: [
+    { id: 1792069328230, name: 'Said Rahman', role: 'WO Team', phone: '+62 851-6151-1869' },
+    { id: 1792069351499, name: 'Laeliya Hasanah', role: 'WO Team', phone: '081227502548' },
+    { id: 1792069399904, name: 'Sulis', role: 'Content Creator', phone: '+62 857-2849-9745' },
+    { id: 1792069431141, name: 'Aknes', role: 'Bride Assistant', phone: '+62 857-2849-9745' },
+    { id: 1792069466552, name: 'Radit', role: 'Photobooth Team', phone: '‪+62 896‑2040‑5807‬' }
   ],
+  tasks: [],
   activity: [
     {
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      text: 'Dashboard siap digunakan.'
+      text: 'Database tersinkronisasi dengan Google Sheets.'
     }
   ]
 };

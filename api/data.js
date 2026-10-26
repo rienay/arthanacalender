@@ -47,7 +47,8 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const scriptUrl = process.env.GOOGLE_SHEETS_SCRIPT_URL;
+  const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOqLOHjTfgFw5J_AHw0dcrsreA2LYhlScRF6uaNyjbM3PQD4d71CKeuGEvz-plMKUT/exec';
+  const scriptUrl = process.env.GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_SCRIPT_URL;
   const scriptSecret = process.env.GOOGLE_SHEETS_SECRET || '';
 
   // 2. GET: Load Data

@@ -433,17 +433,24 @@ function updateSheetsBadge() {
 
 function explainGoogleSheets() {
   if (isGoogleSheetsConnected) {
-    showToast('✓ Google Sheets aktif & tersinkronisasi otomatis');
+    triggerSyncNow();
   } else {
-    alert(
-      "CARA MENGHUBUNGKAN GOOGLE SHEETS:\n\n" +
-      "1. Buka file 'google-apps-script.js' di proyek ini.\n" +
-      "2. Buat Google Sheet baru, buka Extensions > Apps Script.\n" +
-      "3. Paste kode tersebut dan Deploy as Web App (Access: Anyone).\n" +
-      "4. Masukkan URL Web App ke file .env.local atau Vercel Environment Variables:\n" +
-      "   GOOGLE_SHEETS_SCRIPT_URL=https://script.google.com/macros/s/.../exec\n\n" +
-      "Petunjuk lengkap tersedia di file PANDUAN_VERCEL_GOOGLE_SHEETS.md"
-    );
+    showToast('🔄 Mencoba menghubungkan ke Google Sheets...');
+    loadData().then(() => {
+      if (isGoogleSheetsConnected) {
+        showToast('✓ Berhasil terhubung ke Google Sheets!');
+      } else {
+        alert(
+          "CARA MENGHUBUNGKAN GOOGLE SHEETS:\n\n" +
+          "1. Buka file 'google-apps-script.js' di proyek ini.\n" +
+          "2. Buka spreadsheet Google Sheets Anda > Extensions > Apps Script.\n" +
+          "3. Paste kode tersebut dan Deploy as Web App (Who has access: Anyone).\n" +
+          "4. Masukkan URL Web App ke Vercel Environment Variables:\n" +
+          "   GOOGLE_SHEETS_SCRIPT_URL=https://script.google.com/macros/s/.../exec\n\n" +
+          "Petunjuk lengkap tersedia di PANDUAN_VERCEL_GOOGLE_SHEETS.md"
+        );
+      }
+    });
   }
 }
 
@@ -2493,10 +2500,14 @@ function importDataBackup(e) {
 }
 
 async function triggerSyncNow() {
-  showToast('🔄 Menyinkronkan database dengan cloud...');
-  await save();
+  showToast('🔄 Mengambil data terbaru dari Google Sheets...');
+  await loadData();
   renderAll();
-  showToast('✓ Sinkronisasi cloud berhasil!');
+  if (isGoogleSheetsConnected) {
+    showToast('✓ Data berhasil disinkronkan dengan Google Sheets!');
+  } else {
+    showToast('⚠️ Google Sheets belum terhubung. Menampilkan data lokal.');
+  }
 }
 
 // ------------------------------------------------------------------------------
