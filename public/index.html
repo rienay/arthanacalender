@@ -6,7 +6,7 @@
   <title>ARTHANA Wedding & Events — Running Event Management</title>
   <meta name="description" content="Dashboard Manajemen Running Event & Kalender Operasional Wedding Organizer ARTHANA">
   <link rel="icon" type="image/png" href="/assets/logo.png">
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/app.css?v=2.6">
 </head>
 <body class="locked">
 
@@ -55,7 +55,9 @@
   <aside class="sidebar">
     <div class="brand-wrapper">
       <button class="sidebar-close-btn" onclick="toggleMobileSidebar()" aria-label="Tutup Menu">✕</button>
-      <img class="brand-logo-img" src="/assets/logo.png" alt="ARTHANA Wedding & Events">
+      <div class="brand-emblem-badge">
+        <img class="brand-logo-img" src="/assets/logo.png" alt="ARTHANA Wedding & Events">
+      </div>
       <div class="brand-tagline">Running Event Management</div>
     </div>
 
@@ -109,11 +111,17 @@
         </div>
       </div>
 
-      <!-- Theme Switcher -->
-      <button id="sideThemeBtn" class="sidebar-theme-btn" onclick="toggleTheme()" title="Ganti Tema (Gelap / Terang)">
-        <span id="sideThemeIcon">🌙</span>
-        <span id="sideThemeText">Mode Gelap</span>
-      </button>
+      <!-- Theme Switcher (Segmented Switch for Clear UX) -->
+      <div class="sidebar-theme-segment" role="group" aria-label="Pilihan Tema Tampilan">
+        <button type="button" id="themePillLight" class="theme-pill" onclick="setTheme('light')" title="Gunakan Tema Mode Terang">
+          <span>☀️</span>
+          <span>Terang</span>
+        </button>
+        <button type="button" id="themePillDark" class="theme-pill" onclick="setTheme('dark')" title="Gunakan Tema Mode Gelap">
+          <span>🌙</span>
+          <span>Gelap</span>
+        </button>
+      </div>
 
       <button class="logout-btn" onclick="logoutArthana()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -491,6 +499,40 @@
             <div class="label">STATUS SYNC</div>
             <div class="num" id="settSyncStatus" style="font-size:15px;font-weight:700;color:var(--success)">Aktif</div>
           </div>
+        <!-- Section: Pengaturan Tampilan & Tema (User-Friendly Display Options) -->
+        <div class="card pad section" style="margin-top:0;margin-bottom:20px">
+          <div class="section-head" style="margin-bottom:8px">
+            <div>
+              <h3>Tampilan & Mode Warna</h3>
+              <div style="font-size:13px;color:var(--text-muted)">Sesuaikan tema visual dashboard ARTHANA agar selalu nyaman di mata sesuai kondisi cahaya.</div>
+            </div>
+          </div>
+
+          <div class="theme-options-grid">
+            <div id="settThemeLight" class="theme-option-card active" onclick="setTheme('light')">
+              <div class="theme-option-preview light-preview">
+                <div class="preview-bar"></div>
+                <div class="preview-box"></div>
+              </div>
+              <div class="theme-option-content">
+                <div class="theme-option-title">☀️ Mode Terang (Light Mode)</div>
+                <div class="theme-option-desc">Kontras tinggi, bersih, dan segar. Sangat nyaman untuk operasional di siang hari.</div>
+              </div>
+              <div class="theme-check-icon">✓</div>
+            </div>
+
+            <div id="settThemeDark" class="theme-option-card" onclick="setTheme('dark')">
+              <div class="theme-option-preview dark-preview">
+                <div class="preview-bar"></div>
+                <div class="preview-box"></div>
+              </div>
+              <div class="theme-option-content">
+                <div class="theme-option-title">🌙 Mode Gelap (Dark Mode)</div>
+                <div class="theme-option-desc">Nuansa obsidian mewah, meredam silau lampu dan nyaman di mata saat malam hari.</div>
+              </div>
+              <div class="theme-check-icon">✓</div>
+            </div>
+          </div>
         </div>
 
         <!-- Section: Danger Zone (Reset Data) -->
@@ -851,6 +893,6 @@
 <div class="toast" id="toast"></div>
 
 <!-- JavaScript Application -->
-<script src="/js/app.js"></script>
+<script src="/js/app.js?v=2.2"></script>
 </body>
 </html>

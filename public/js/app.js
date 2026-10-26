@@ -228,27 +228,47 @@ function initTheme() {
 }
 
 function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
+  const activeTheme = (theme === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', activeTheme);
+  localStorage.setItem('arthana_theme', activeTheme);
+
+  // Topbar Button Icon & Tooltip
   const icon = document.getElementById('themeIcon');
+  const topBtn = document.getElementById('themeToggleBtn');
   if (icon) {
-    icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    icon.textContent = activeTheme === 'dark' ? '☀️' : '🌙';
   }
+  if (topBtn) {
+    topBtn.setAttribute('title', activeTheme === 'dark' ? 'Beralih ke Mode Terang (☀️)' : 'Beralih ke Mode Gelap (🌙)');
+  }
+
+  // Sidebar Segmented Pill Switcher
+  const pillLight = document.getElementById('themePillLight');
+  const pillDark = document.getElementById('themePillDark');
+  if (pillLight) pillLight.classList.toggle('active', activeTheme === 'light');
+  if (pillDark) pillDark.classList.toggle('active', activeTheme === 'dark');
+
+  // Settings Page Option Cards
+  const settLight = document.getElementById('settThemeLight');
+  const settDark = document.getElementById('settThemeDark');
+  if (settLight) settLight.classList.toggle('active', activeTheme === 'light');
+  if (settDark) settDark.classList.toggle('active', activeTheme === 'dark');
+
+  // Backward compatibility with legacy sideThemeBtn if present
   const sideIcon = document.getElementById('sideThemeIcon');
   const sideText = document.getElementById('sideThemeText');
-  if (sideIcon) {
-    sideIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
-  }
-  if (sideText) {
-    sideText.textContent = theme === 'dark' ? 'Mode Terang' : 'Mode Gelap';
-  }
+  if (sideIcon) sideIcon.textContent = activeTheme === 'dark' ? '☀️' : '🌙';
+  if (sideText) sideText.textContent = activeTheme === 'dark' ? 'Mode Terang' : 'Mode Gelap';
 }
 
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
   const next = current === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('arthana_theme', next);
   applyTheme(next);
-  showToast(`Tema: ${next === 'dark' ? 'Mode Gelap 🌙' : 'Mode Terang ☀️'}`);
+}
+
+function setTheme(theme) {
+  applyTheme(theme);
 }
 
 // ------------------------------------------------------------------------------
